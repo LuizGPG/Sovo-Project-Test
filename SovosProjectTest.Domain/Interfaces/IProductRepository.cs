@@ -10,6 +10,6 @@ namespace SovosProjectTest.Domain.Interfaces
         Task<IList<Product>> GetProductsAll();
         Task<Product> GetByIdAsync(Guid id);
         Task Delete(Guid id);
-        Task<IList<Product>> GetProducts(ProductFilterDto productFilterDto);
+        Task<(IList<Product> Products, int TotalCount)> GetProducts(ProductFilterDto productFilterDto);
     }
 }

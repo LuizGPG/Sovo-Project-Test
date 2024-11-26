@@ -36,11 +36,19 @@ namespace SovosProjectTest.Application.Services
             return _mapper.Map<ProductModel>(product);
         }
 
-        public async Task<IList<ProductModel>> GetProducts(ProductFilterModel productFilter)
+        public async Task<PagedResponse<ProductModel>> GetProducts(ProductFilterModel productFilter)
         {
-            var products = await _productRepository.GetProducts(_mapper.Map<ProductFilterDto>(productFilter));
+            var productFilterDto = _mapper.Map<ProductFilterDto>(productFilter);
+            var (products, totalCount) = await _productRepository.GetProducts(productFilterDto);
 
-            return _mapper.Map<List<ProductModel>>(products);
+            var productModels = _mapper.Map<List<ProductModel>>(products);
+            return new PagedResponse<ProductModel>
+            {
+                Data = productModels,
+                TotalItems = totalCount,
+                PageNumber = productFilter.Page,
+                PageSize = productFilter.PageSize
+            };
         }
 
         public async Task<IList<ProductModel>> GetProductsAll()

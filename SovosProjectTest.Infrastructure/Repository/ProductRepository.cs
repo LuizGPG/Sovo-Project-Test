@@ -34,10 +34,10 @@ namespace SovosProjectTest.Infrastructure.Repository
             return await _dbContext.Products.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
         }
 
-        public async Task<IList<Product>> GetProducts(ProductFilterDto productFilterDto)
+        public async Task<(IList<Product> Products, int TotalCount)> GetProducts(ProductFilterDto productFilterDto)
         {
             var query = _dbContext.Products.AsQueryable();
-
+            
             if (!string.IsNullOrEmpty(productFilterDto.Category))
             {
                 query = query.Where(p => p.Category == productFilterDto.Category);
@@ -57,14 +57,19 @@ namespace SovosProjectTest.Infrastructure.Repository
             {
                 query = query.OrderBy(p => p.Price);
             }
-
+            
+            var totalCount = await query.CountAsync();
             if (productFilterDto.Page.HasValue && productFilterDto.PageSize.HasValue)
             {
-                query = query.Skip((productFilterDto.Page.Value - 1) * productFilterDto.PageSize.Value).Take(productFilterDto.PageSize.Value);
+                query = query
+                    .Skip((productFilterDto.Page.Value - 1) * productFilterDto.PageSize.Value)
+                    .Take(productFilterDto.PageSize.Value);
             }
 
-            return await query.ToListAsync();
+            var products = await query.ToListAsync();
+            return (products, totalCount);
         }
+
 
         public async Task<IList<Product>> GetProductsAll()
         {

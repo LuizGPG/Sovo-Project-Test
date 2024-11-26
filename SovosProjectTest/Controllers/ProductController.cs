@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SovosProjectTest.Application;
 using SovosProjectTest.Application.Filters;
 using SovosProjectTest.Application.Model;
 using SovosProjectTest.Application.Services.Interfaces;
+using SovosProjectTest.Domain.Entities;
+using SovosProjectTest.Domain.Filters;
 
 namespace SovosProjectTest.Controllers
 {
@@ -21,11 +24,10 @@ namespace SovosProjectTest.Controllers
         [HttpPost("GetProductsFilter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IList<ProductModel>>> GetProductsFilter([FromBody] ProductFilterModel productFilter)
+        public async Task<ActionResult<PagedResponse<ProductModel>>> GetProductsFilter([FromBody] ProductFilterModel productFilter)
         {
-            var products = await _productService.GetProducts(productFilter);
-
-            return Ok(products);
+            var productResponde = await _productService.GetProducts(productFilter);
+            return Ok(productResponde);
         }
 
         [HttpPost]

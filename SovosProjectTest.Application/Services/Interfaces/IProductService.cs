@@ -9,7 +9,7 @@ namespace SovosProjectTest.Application.Services.Interfaces
         Task Update(ProductModel productModel);
         Task Delete(Guid id);
         Task<IList<ProductModel>> GetProductsAll();
-        Task<IList<ProductModel>> GetProducts(ProductFilterModel productFilter);
+        Task<PagedResponse<ProductModel>> GetProducts(ProductFilterModel productFilter);
         Task<ProductModel> GetByIdAsync(Guid id);
     }
 }
