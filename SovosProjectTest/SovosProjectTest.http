@@ -1,0 +1,6 @@
+@SovosProjectTest_HostAddress = http://localhost:5015
+
+GET {{SovosProjectTest_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
