@@ -51,7 +51,7 @@ namespace SovosProjectTest.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IList<ProductModel>>> Create([FromBody] ProductModel product)
+        public async Task<ActionResult> Create([FromBody] ProductModel product)
         {
             if (product.StockQuantity <= 0 || product.Price <= 0)
             {

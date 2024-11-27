@@ -34,7 +34,7 @@ namespace SovosProjectTest.Infrastructure.Repository
             return await _dbContext.Products.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
         }
 
-        public async Task<(IList<Product> Products, int TotalCount)> GetProducts(ProductFilterDto productFilterDto)
+        public async Task<(IList<Product> Products, int TotalCount)> GetProducts(ProductFilter productFilterDto)
         {
             var query = _dbContext.Products.AsQueryable();
 
@@ -77,7 +77,6 @@ namespace SovosProjectTest.Infrastructure.Repository
             var products = await query.ToListAsync();
             return (products, totalCount);
         }
-
 
         public async Task<IList<Product>> GetProductsAll()
         {

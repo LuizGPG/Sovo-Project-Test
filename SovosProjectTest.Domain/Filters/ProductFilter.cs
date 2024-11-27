@@ -1,6 +1,6 @@
 ﻿namespace SovosProjectTest.Domain.Filters
 {
-    public class ProductFilterDto : BaseFilterDto
+    public class ProductFilter : BaseFilter
     {
         public string? Category { get; set; }
         public decimal? MinPrice { get; set; }

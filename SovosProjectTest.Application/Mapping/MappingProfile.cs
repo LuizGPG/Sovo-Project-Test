@@ -12,8 +12,8 @@ namespace SovosProjectTest.Application.Mapping
         {
             CreateMap<ProductModel, Product>().ReverseMap();
 
-            CreateMap<ProductFilterModel, ProductFilterDto>();
-            CreateMap<BaseFilterModel, BaseFilterDto>();
+            CreateMap<ProductFilterModel, ProductFilter>();
+            CreateMap<BaseFilterModel, BaseFilter>();
         }
     }
 }
