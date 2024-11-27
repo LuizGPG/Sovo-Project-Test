@@ -8,6 +8,8 @@ using SovosProjectTest.Application.Services.Interfaces;
 using SovosProjectTest.Controllers;
 using Xunit;
 using SovosProjectTest.UnitTest.Fake;
+using System.Net;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace SovosProjectTest.UnitTest.ControllerTest
 {
@@ -60,7 +62,7 @@ namespace SovosProjectTest.UnitTest.ControllerTest
             };
 
             _productServiceMock
-                .Setup(service => service.GetProducts(productFilter))
+                .Setup(service => service.GetProductsAsync(productFilter))
                 .ReturnsAsync(expectedProducts);
 
             var result = await _controller.GetProductsFilter(productFilter);
@@ -69,13 +71,12 @@ namespace SovosProjectTest.UnitTest.ControllerTest
             var returnedProducts = Assert.IsType<PagedResponse<ProductModel>>(okResult.Value);
 
             Assert.Equal(expectedProducts.Data.Count, returnedProducts.Data.Count);
-            _productServiceMock.Verify(service => service.GetProducts(It.IsAny<ProductFilterModel>()), Times.Once);
+            _productServiceMock.Verify(service => service.GetProductsAsync(It.IsAny<ProductFilterModel>()), Times.Once);
         }
 
         [Fact]
         public async Task GetProductsFilter_ShouldReturnNotFound()
         {
-            //var productFilter = new ProductFilterModel { Page = 1, PageSize = 10, Category = "Category Fake"};
             var productFilter = ProductFilterFake.ProductFilterModelFake();
             var expectedProducts = new PagedResponse<ProductModel>
             {
@@ -85,7 +86,7 @@ namespace SovosProjectTest.UnitTest.ControllerTest
             };
             
             _productServiceMock
-                .Setup(service => service.GetProducts(productFilter))
+                .Setup(service => service.GetProductsAsync(productFilter))
                 .ReturnsAsync(expectedProducts);
 
             _memoryCache.Set($"Products_1_10_Category Test_10_100__False", expectedProducts);
@@ -93,7 +94,7 @@ namespace SovosProjectTest.UnitTest.ControllerTest
             var result = await _controller.GetProductsFilter(productFilter);
 
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-            Assert.Equal(404, notFoundResult.StatusCode);
+            Assert.Equal((int)HttpStatusCode.NotFound, notFoundResult.StatusCode);
         }
 
         [Fact]
@@ -101,12 +102,12 @@ namespace SovosProjectTest.UnitTest.ControllerTest
         {
             var productModelFake = ProductFake.ProductModelFakeData();
             productModelFake.Price = 0;
-            productModelFake.StockQuantity = 0;
+            productModelFake.StockQuantity = -1;
 
             var result = await _controller.Create(productModelFake);
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(400, badRequest.StatusCode);
+            Assert.Equal((int)HttpStatusCode.BadRequest, badRequest.StatusCode);
         }
 
         [Fact]
@@ -115,13 +116,36 @@ namespace SovosProjectTest.UnitTest.ControllerTest
             var productModelFake = ProductFake.ProductModelFakeData();
             
             _productServiceMock
-                .Setup(service => service.Create(productModelFake))
+                .Setup(service => service.GetByIdAsync(productModelFake.Id))
+                .ReturnsAsync((ProductModel) null);
+
+            _productServiceMock
+                .Setup(service => service.CreateAsync(productModelFake))
                 .Returns(Task.CompletedTask);
 
             var result = await _controller.Create(productModelFake);
 
             var okResult = Assert.IsType<OkResult>(result);
-            Assert.Equal(200, okResult.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task CreateProducts_ShouldReturnBadRequest_DuplicatedId()
+        {
+            var productModelFake = ProductFake.ProductModelFakeData();
+
+            _productServiceMock
+                .Setup(service => service.GetByIdAsync(productModelFake.Id))
+                .ReturnsAsync(productModelFake);
+
+            _productServiceMock
+                .Setup(service => service.CreateAsync(productModelFake))
+                .Returns(Task.CompletedTask);
+
+            var result = await _controller.Create(productModelFake);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.BadRequest, badRequest.StatusCode);
         }
 
         [Fact]
@@ -134,13 +158,13 @@ namespace SovosProjectTest.UnitTest.ControllerTest
                 .ReturnsAsync(productModelFake);
 
             _productServiceMock
-                .Setup(service => service.Update(productModelFake))
+                .Setup(service => service.UpdateAsync(productModelFake))
                 .Returns(Task.CompletedTask);
 
             var result = await _controller.Update(productModelFake);
 
             var okResult = Assert.IsType<OkResult>(result);
-            Assert.Equal(200, okResult.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
         }
 
         [Fact]
@@ -153,13 +177,13 @@ namespace SovosProjectTest.UnitTest.ControllerTest
                 .ReturnsAsync((ProductModel)null);
 
             _productServiceMock
-                .Setup(service => service.Update(productModelFake))
+                .Setup(service => service.UpdateAsync(productModelFake))
                 .Returns(Task.CompletedTask);
 
             var result = await _controller.Update(productModelFake);
 
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal(404, notFoundResult.StatusCode);
+            Assert.Equal((int)HttpStatusCode.NotFound, notFoundResult.StatusCode);
         }
 
         [Fact]
@@ -172,7 +196,7 @@ namespace SovosProjectTest.UnitTest.ControllerTest
             var result = await _controller.Create(productModelFake);
 
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(400, badRequestResult.StatusCode);
+            Assert.Equal((int)HttpStatusCode.BadRequest, badRequestResult.StatusCode);
         }
 
         [Fact]
@@ -185,13 +209,13 @@ namespace SovosProjectTest.UnitTest.ControllerTest
                 .ReturnsAsync(productModelFake);
 
             _productServiceMock
-                .Setup(service => service.Delete(productModelFake.Id))
+                .Setup(service => service.DeleteAsync(productModelFake.Id))
                 .Returns(Task.CompletedTask);
 
             var result = await _controller.Delete(productModelFake.Id);
 
             var okResult = Assert.IsType<OkResult>(result);
-            Assert.Equal(200, okResult.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
         }
 
         [Fact]
@@ -204,13 +228,13 @@ namespace SovosProjectTest.UnitTest.ControllerTest
                 .ReturnsAsync((ProductModel)null);
 
             _productServiceMock
-                .Setup(service => service.Delete(productModelFake.Id))
+                .Setup(service => service.DeleteAsync(productModelFake.Id))
                 .Returns(Task.CompletedTask);
 
             var result = await _controller.Delete(productModelFake.Id);
 
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal(404, notFoundResult.StatusCode);
+            Assert.Equal((int)HttpStatusCode.NotFound, notFoundResult.StatusCode);
         }
     }
 }

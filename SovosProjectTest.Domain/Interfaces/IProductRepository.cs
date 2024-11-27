@@ -5,11 +5,10 @@ namespace SovosProjectTest.Domain.Interfaces
 {
     public interface IProductRepository
     {
-        Task Create(Product productModel);
-        Task Update(Product productModel);
-        Task<IList<Product>> GetProductsAll();
+        Task CreateAsync(Product productModel);
+        Task UpdateAsync(Product productModel);
+        Task DeleteAsync(Guid id);
+        Task<(IList<Product> Products, int TotalCount)> GetProductsAsync(ProductFilter productFilter);
         Task<Product> GetByIdAsync(Guid id);
-        Task Delete(Guid id);
-        Task<(IList<Product> Products, int TotalCount)> GetProducts(ProductFilter productFilter);
     }
 }

@@ -30,7 +30,7 @@ namespace SovosProjectTest.UnitTest.RepositoryTest
         {
             var productFilter = ProductFilterFake.ProductFilterFakeData();
             
-            var (products, totalCount) = await _productRepository.GetProducts(productFilter);
+            var (products, totalCount) = await _productRepository.GetProductsAsync(productFilter);
 
             Assert.NotNull(products);
             Assert.True(products[0].Price >= products[1].Price);
@@ -43,7 +43,7 @@ namespace SovosProjectTest.UnitTest.RepositoryTest
             var productFilter = ProductFilterFake.ProductFilterFakeData();
             productFilter.SortDescending = false;
 
-            var (products, totalCount) = await _productRepository.GetProducts(productFilter);
+            var (products, totalCount) = await _productRepository.GetProductsAsync(productFilter);
 
             Assert.NotNull(products);
             Assert.True(products[0].Price <= products[1].Price);

@@ -15,13 +15,19 @@ namespace SovosProjectTest.Infrastructure.Repository
             _dbContext = dbContext;
         }
 
-        public async Task Create(Product productModel)
+        public async Task CreateAsync(Product productModel)
         {
             _dbContext.Products.Add(productModel);
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task Delete(Guid id)
+        public async Task UpdateAsync(Product productModel)
+        {
+            _dbContext.Update(productModel);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(Guid id)
         {
             var product = await _dbContext.Products.FirstAsync(d => d.Id == id);
 
@@ -29,12 +35,7 @@ namespace SovosProjectTest.Infrastructure.Repository
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<Product> GetByIdAsync(Guid id)
-        {
-            return await _dbContext.Products.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
-        }
-
-        public async Task<(IList<Product> Products, int TotalCount)> GetProducts(ProductFilter productFilter)
+        public async Task<(IList<Product> Products, int TotalCount)> GetProductsAsync(ProductFilter productFilter)
         {
             var query = _dbContext.Products.AsQueryable();
 
@@ -78,15 +79,9 @@ namespace SovosProjectTest.Infrastructure.Repository
             return (products, totalCount);
         }
 
-        public async Task<IList<Product>> GetProductsAll()
+        public async Task<Product> GetByIdAsync(Guid id)
         {
-            return await _dbContext.Products.ToListAsync();
-        }
-
-        public async Task Update(Product productModel)
-        {
-            _dbContext.Update(productModel);
-            await _dbContext.SaveChangesAsync();
+            return await _dbContext.Products.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
         }
     }
 }

@@ -35,13 +35,13 @@ namespace SovosProjectTest.UnitTest.ServiceTest
                 .Returns(productFake);
 
             _productRepositoryMock
-                .Setup(repo => repo.Create(It.IsAny<Product>()))
+                .Setup(repo => repo.CreateAsync(It.IsAny<Product>()))
                 .Returns(Task.CompletedTask);
 
-            await _productService.Create(productModelFake);
+            await _productService.CreateAsync(productModelFake);
 
             _mapperMock.Verify(mapper => mapper.Map<Product>(productModelFake), Times.Once);
-            _productRepositoryMock.Verify(repo => repo.Create(It.Is<Product>(p =>
+            _productRepositoryMock.Verify(repo => repo.CreateAsync(It.Is<Product>(p =>
                 p.Id == productFake.Id &&
                 p.Name == productFake.Name &&
                 p.Price == productFake.Price &&
@@ -67,10 +67,10 @@ namespace SovosProjectTest.UnitTest.ServiceTest
                 .Returns(productsModelFake);
 
             _productRepositoryMock
-                .Setup(repo => repo.GetProducts(productFilter))
+                .Setup(repo => repo.GetProductsAsync(productFilter))
                 .ReturnsAsync((productsFake, totalCountFake));
 
-            var result = await _productService.GetProducts(productFilerModel);
+            var result = await _productService.GetProductsAsync(productFilerModel);
 
             Assert.NotNull(result);
             Assert.Equal(totalCountFake, result.TotalItems);
@@ -79,7 +79,7 @@ namespace SovosProjectTest.UnitTest.ServiceTest
             Assert.Equal(productsModelFake, result.Data);
 
             _mapperMock.Verify(mapper => mapper.Map<ProductFilter>(productFilerModel), Times.Once);
-            _productRepositoryMock.Verify(repo => repo.GetProducts(productFilter), Times.Once);
+            _productRepositoryMock.Verify(repo => repo.GetProductsAsync(productFilter), Times.Once);
             _mapperMock.Verify(mapper => mapper.Map<List<ProductModel>>(productsFake), Times.Once);
         }
     }

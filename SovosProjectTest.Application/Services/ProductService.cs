@@ -19,27 +19,27 @@ namespace SovosProjectTest.Application.Services
             _mapper = mapper;
         }
 
-        public async Task Create(ProductModel productModel)
+        public async Task CreateAsync(ProductModel productModel)
         {
             var product = _mapper.Map<Product>(productModel);
-            await _productRepository.Create(product);
+            await _productRepository.CreateAsync(product);
         }
 
-        public async Task Delete(Guid id)
+        public async Task UpdateAsync(ProductModel productModel)
         {
-            await _productRepository.Delete(id);
+            var product = _mapper.Map<Product>(productModel);
+            await _productRepository.UpdateAsync(product);
         }
 
-        public async Task<ProductModel> GetByIdAsync(Guid id)
+        public async Task DeleteAsync(Guid id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            return _mapper.Map<ProductModel>(product);
+            await _productRepository.DeleteAsync(id);
         }
 
-        public async Task<PagedResponse<ProductModel>> GetProducts(ProductFilterModel productFilterModel)
+        public async Task<PagedResponse<ProductModel>> GetProductsAsync(ProductFilterModel productFilterModel)
         {
             var productFilter = _mapper.Map<ProductFilter>(productFilterModel);
-            var (products, totalCount) = await _productRepository.GetProducts(productFilter);
+            var (products, totalCount) = await _productRepository.GetProductsAsync(productFilter);
 
             var productModels = _mapper.Map<List<ProductModel>>(products);
             return new PagedResponse<ProductModel>
@@ -51,18 +51,10 @@ namespace SovosProjectTest.Application.Services
             };
         }
 
-        public async Task<IList<ProductModel>> GetProductsAll()
+        public async Task<ProductModel> GetByIdAsync(Guid id)
         {
-            var product = await _productRepository.GetProductsAll();
-            var productModel = _mapper.Map<List<ProductModel>>(product);
-
-            return productModel;
-        }
-
-        public async Task Update(ProductModel productModel)
-        {
-            var product = _mapper.Map<Product>(productModel);
-            await _productRepository.Update(product);
+            var product = await _productRepository.GetByIdAsync(id);
+            return _mapper.Map<ProductModel>(product);
         }
     }
 }

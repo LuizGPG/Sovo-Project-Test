@@ -5,11 +5,10 @@ namespace SovosProjectTest.Application.Services.Interfaces
 {
     public interface IProductService
     {
-        Task Create(ProductModel productModel);
-        Task Update(ProductModel productModel);
-        Task Delete(Guid id);
-        Task<IList<ProductModel>> GetProductsAll();
-        Task<PagedResponse<ProductModel>> GetProducts(ProductFilterModel productFilter);
+        Task CreateAsync(ProductModel productModel);
+        Task UpdateAsync(ProductModel productModel);
+        Task DeleteAsync(Guid id);
+        Task<PagedResponse<ProductModel>> GetProductsAsync(ProductFilterModel productFilter);
         Task<ProductModel> GetByIdAsync(Guid id);
     }
 }
