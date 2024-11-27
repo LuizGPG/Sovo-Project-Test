@@ -4,8 +4,6 @@ using SovosProjectTest.Application;
 using SovosProjectTest.Application.Filters;
 using SovosProjectTest.Application.Model;
 using SovosProjectTest.Application.Services.Interfaces;
-using SovosProjectTest.Domain.Entities;
-using SovosProjectTest.Domain.Filters;
 
 namespace SovosProjectTest.Controllers
 {

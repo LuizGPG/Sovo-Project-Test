@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using SovosProjectTest.Domain.Entities;
 
 #nullable disable
 
