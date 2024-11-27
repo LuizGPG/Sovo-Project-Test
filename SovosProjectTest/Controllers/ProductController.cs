@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using SovosProjectTest.Application;
 using SovosProjectTest.Application.Filters;
 using SovosProjectTest.Application.Model;
@@ -16,9 +17,11 @@ namespace SovosProjectTest.Controllers
         private const string InvalidStockPriceMessage = "Invalid stock quantity or price.";
 
         private readonly IProductService _productService;
-        public ProductController(IProductService productService)
+        private readonly IMemoryCache _memoryCache;
+        public ProductController(IProductService productService, IMemoryCache memoryCache)
         {
             _productService = productService;
+            _memoryCache = memoryCache;
         }
 
         [HttpPost("GetProductsFilter")]
@@ -26,8 +29,25 @@ namespace SovosProjectTest.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagedResponse<ProductModel>>> GetProductsFilter([FromBody] ProductFilterModel productFilter)
         {
-            var productResponde = await _productService.GetProducts(productFilter);
-            return Ok(productResponde);
+            var cacheKey = $"Products_{productFilter.Page}_{productFilter.PageSize}_{productFilter.Category}_{productFilter.MinPrice}_{productFilter.MaxPrice}_{productFilter.SortBy}_{productFilter.SortDescending}";
+
+            if (!_memoryCache.TryGetValue(cacheKey, out PagedResponse<ProductModel> cachedProducts))
+            {
+                cachedProducts = await _productService.GetProducts(productFilter);
+                var cacheOptions = new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1)
+                };
+
+                _memoryCache.Set(cacheKey, cachedProducts, cacheOptions);
+            }
+
+            if (cachedProducts == null || !cachedProducts.Data.Any())
+            {
+                return NotFound(new { Message = NotFoundMessage });
+            }
+
+            return Ok(cachedProducts);
         }
 
         [HttpPost]
@@ -35,11 +55,11 @@ namespace SovosProjectTest.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IList<ProductModel>>> Create([FromBody] ProductModel product)
         {
-            if(product.StockQuantity <= 0 || product.Price <= 0)
+            if (product.StockQuantity <= 0 || product.Price <= 0)
             {
                 return BadRequest(new { Message = InvalidStockPriceMessage });
             }
-            
+
             await _productService.Create(product);
             return Ok();
         }
@@ -71,7 +91,7 @@ namespace SovosProjectTest.Controllers
         public async Task<ActionResult> Delete(Guid id)
         {
             var product = await _productService.GetByIdAsync(id);
-            if(product == null)
+            if (product == null)
             {
                 return NotFound(new { Message = NotFoundMessage });
             }

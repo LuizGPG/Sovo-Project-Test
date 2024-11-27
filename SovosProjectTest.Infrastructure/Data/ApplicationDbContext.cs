@@ -16,15 +16,5 @@ namespace SovosProjectTest.Infrastructure.Data
             optionsBuilder.ConfigureWarnings(warnings => warnings
                 .Ignore(RelationalEventId.PendingModelChangesWarning));
         }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<Product>().HasData(
-                new Product { Id = Guid.NewGuid(),  Name = "Product A", Category = "Category 1", Price = 10.0M, StockQuantity = 10 },
-                new Product { Id = Guid.NewGuid(), Name = "Product B", Category = "Category 2", Price = 20.0M , StockQuantity = 10},
-                new Product { Id = Guid.NewGuid(), Name = "Product C", Category = "Category 1", Price = 30.0M , StockQuantity = 10}
-            );
-        }
     }
 }

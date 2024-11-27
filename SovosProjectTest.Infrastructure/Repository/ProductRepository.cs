@@ -24,7 +24,7 @@ namespace SovosProjectTest.Infrastructure.Repository
         public async Task Delete(Guid id)
         {
             var product = await _dbContext.Products.FirstAsync(d => d.Id == id);
-            
+
             _dbContext.Remove(product);
             await _dbContext.SaveChangesAsync();
         }
@@ -37,7 +37,7 @@ namespace SovosProjectTest.Infrastructure.Repository
         public async Task<(IList<Product> Products, int TotalCount)> GetProducts(ProductFilterDto productFilterDto)
         {
             var query = _dbContext.Products.AsQueryable();
-            
+
             if (!string.IsNullOrEmpty(productFilterDto.Category))
             {
                 query = query.Where(p => p.Category == productFilterDto.Category);
@@ -53,11 +53,19 @@ namespace SovosProjectTest.Infrastructure.Repository
                 query = query.Where(p => p.Price <= productFilterDto.MaxPrice.Value);
             }
 
-            if (productFilterDto.SortByPrice)
+            if (!string.IsNullOrEmpty(productFilterDto.SortBy))
             {
-                query = query.OrderBy(p => p.Price);
+                query = productFilterDto.SortBy.ToLower()
+                switch
+                {
+                    "price" => productFilterDto.SortDescending ? 
+                        query.OrderByDescending(p => (double)p.Price) : query.OrderBy(p => (double)p.Price),
+                    "name" => productFilterDto.SortDescending ? 
+                        query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name),
+                    _ => query
+                };
             }
-            
+
             var totalCount = await query.CountAsync();
             if (productFilterDto.Page.HasValue && productFilterDto.PageSize.HasValue)
             {
