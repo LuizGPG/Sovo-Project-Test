@@ -28,9 +28,9 @@ namespace SovosProjectTest.UnitTest.RepositoryTest
         [Fact]
         public async Task GetProducts_ShouldReturnFilteredAndSortedResults_Desc()
         {
-            var productFilterDto = ProductFilterFake.ProductFilterFakeData();
+            var productFilter = ProductFilterFake.ProductFilterFakeData();
             
-            var (products, totalCount) = await _productRepository.GetProducts(productFilterDto);
+            var (products, totalCount) = await _productRepository.GetProducts(productFilter);
 
             Assert.NotNull(products);
             Assert.True(products[0].Price >= products[1].Price);
@@ -40,10 +40,10 @@ namespace SovosProjectTest.UnitTest.RepositoryTest
         [Fact]
         public async Task GetProducts_ShouldReturnFilteredAndSortedResults()
         {
-            var productFilterDto = ProductFilterFake.ProductFilterFakeData();
-            productFilterDto.SortDescending = false;
+            var productFilter = ProductFilterFake.ProductFilterFakeData();
+            productFilter.SortDescending = false;
 
-            var (products, totalCount) = await _productRepository.GetProducts(productFilterDto);
+            var (products, totalCount) = await _productRepository.GetProducts(productFilter);
 
             Assert.NotNull(products);
             Assert.True(products[0].Price <= products[1].Price);

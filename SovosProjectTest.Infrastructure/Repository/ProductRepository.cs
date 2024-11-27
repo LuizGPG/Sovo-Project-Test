@@ -34,44 +34,44 @@ namespace SovosProjectTest.Infrastructure.Repository
             return await _dbContext.Products.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
         }
 
-        public async Task<(IList<Product> Products, int TotalCount)> GetProducts(ProductFilter productFilterDto)
+        public async Task<(IList<Product> Products, int TotalCount)> GetProducts(ProductFilter productFilter)
         {
             var query = _dbContext.Products.AsQueryable();
 
-            if (!string.IsNullOrEmpty(productFilterDto.Category))
+            if (!string.IsNullOrEmpty(productFilter.Category))
             {
-                query = query.Where(p => p.Category == productFilterDto.Category);
+                query = query.Where(p => p.Category == productFilter.Category);
             }
 
-            if (productFilterDto.MinPrice.HasValue)
+            if (productFilter.MinPrice.HasValue)
             {
-                query = query.Where(p => p.Price >= productFilterDto.MinPrice.Value);
+                query = query.Where(p => p.Price >= productFilter.MinPrice.Value);
             }
 
-            if (productFilterDto.MaxPrice.HasValue)
+            if (productFilter.MaxPrice.HasValue)
             {
-                query = query.Where(p => p.Price <= productFilterDto.MaxPrice.Value);
+                query = query.Where(p => p.Price <= productFilter.MaxPrice.Value);
             }
 
-            if (!string.IsNullOrEmpty(productFilterDto.SortBy))
+            if (!string.IsNullOrEmpty(productFilter.SortBy))
             {
-                query = productFilterDto.SortBy.ToLower()
+                query = productFilter.SortBy.ToLower()
                 switch
                 {
-                    "price" => productFilterDto.SortDescending ? 
+                    "price" => productFilter.SortDescending ? 
                         query.OrderByDescending(p => (double)p.Price) : query.OrderBy(p => (double)p.Price),
-                    "name" => productFilterDto.SortDescending ? 
+                    "name" => productFilter.SortDescending ? 
                         query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name),
                     _ => query
                 };
             }
 
             var totalCount = await query.CountAsync();
-            if (productFilterDto.Page.HasValue && productFilterDto.PageSize.HasValue)
+            if (productFilter.Page.HasValue && productFilter.PageSize.HasValue)
             {
                 query = query
-                    .Skip((productFilterDto.Page.Value - 1) * productFilterDto.PageSize.Value)
-                    .Take(productFilterDto.PageSize.Value);
+                    .Skip((productFilter.Page.Value - 1) * productFilter.PageSize.Value)
+                    .Take(productFilter.PageSize.Value);
             }
 
             var products = await query.ToListAsync();
