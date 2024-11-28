@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Moq;
+using SovosProjectTest.Application.Filters;
 using SovosProjectTest.Application.Model;
 using SovosProjectTest.Application.Services;
 using SovosProjectTest.Domain.Entities;
@@ -81,6 +83,59 @@ namespace SovosProjectTest.UnitTest.ServiceTest
             _mapperMock.Verify(mapper => mapper.Map<ProductFilter>(productFilerModel), Times.Once);
             _productRepositoryMock.Verify(repo => repo.GetProductsAsync(productFilter), Times.Once);
             _mapperMock.Verify(mapper => mapper.Map<List<ProductModel>>(productsFake), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateProduct_ShouldThrowDbUpdateConcurrencyException()
+        {
+            var productModel = ProductFake.ProductModelFakeData();
+            var existingProduct = ProductFake.ProductFakeData();
+
+            _productRepositoryMock
+                .Setup(r => r.GetByIdAsync(productModel.Id))
+                .ReturnsAsync(existingProduct);
+
+            var exception = await Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () =>
+            {
+                await _productService.UpdateAsync(productModel);
+            });
+
+            Assert.Equal("Product was updated by another process.", exception.Message);
+        }
+
+        [Fact]
+        public async Task UpdateProduct_ShouldNotThrowDbUpdateConcurrencyException()
+        {
+            var productModel = ProductFake.ProductModelFakeData();
+            var existingProduct = ProductFake.ProductFakeData();
+
+            _mapperMock
+                .Setup(mapper => mapper.Map<Product>(productModel))
+                .Returns(existingProduct);
+
+            _productRepositoryMock
+                .Setup(r => r.GetByIdAsync(productModel.Id))
+                .ReturnsAsync(existingProduct);
+
+            _productRepositoryMock
+                .Setup(r => r.UpdateAsync(existingProduct))
+                .ReturnsAsync(existingProduct);
+
+            _mapperMock
+                .Setup(mapper => mapper.Map<ProductModel>(existingProduct))
+                .Returns(productModel);
+
+            var oldVersion = productModel.RowVersion;
+
+            productModel.RowVersion = existingProduct.RowVersion;
+            var exception = await Record.ExceptionAsync(async () =>
+            {
+                productModel = await _productService.UpdateAsync(productModel);
+            });
+
+            Assert.NotEqual(oldVersion, productModel.RowVersion);
+            Assert.Null(exception);
+            _productRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<Product>()), Times.Once);
         }
     }
 }

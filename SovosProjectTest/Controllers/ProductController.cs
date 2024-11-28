@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SovosProjectTest.Application;
 using SovosProjectTest.Application.Filters;
@@ -13,8 +14,8 @@ namespace SovosProjectTest.Controllers
     {
         private const string NotFoundMessage = "No products found with the given criteria.";
         private const string InvalidStockPriceMessage = "Invalid stock quantity or price.";
-        private const string HasProductId = "Product with this ID already exists.";
-         
+        private const string HasProductIdMessage = "Product with this ID already exists.";
+        private const string ConflitMessage = "The product was updated by another user. Please refresh and try again.";
         private readonly IProductService _productService;
         private readonly IMemoryCache _memoryCache;
 
@@ -60,7 +61,7 @@ namespace SovosProjectTest.Controllers
                 var product = _productService.GetByIdAsync(productModel.Id);
                 if(product.Result !=  null)
                 {
-                    return BadRequest(new { Message = HasProductId });
+                    return BadRequest(new { Message = HasProductIdMessage });
                 }
             }
 
@@ -77,7 +78,7 @@ namespace SovosProjectTest.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> Update([FromBody] ProductModel productModel)
+        public async Task<ActionResult<ProductModel>> Update([FromBody] ProductModel productModel)
         {
             var product = await _productService.GetByIdAsync(productModel.Id);
             if (product == null)
@@ -90,8 +91,15 @@ namespace SovosProjectTest.Controllers
                 return BadRequest(new { Message = InvalidStockPriceMessage });
             }
 
-            await _productService.UpdateAsync(productModel);
-            return Ok();
+            try
+            {
+                var updatedProduct = await _productService.UpdateAsync(productModel);
+                return Ok(updatedProduct);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict(ConflitMessage);
+            }
         }
 
         [HttpDelete("{id}")]

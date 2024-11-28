@@ -9,7 +9,6 @@ using SovosProjectTest.Controllers;
 using Xunit;
 using SovosProjectTest.UnitTest.Fake;
 using System.Net;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace SovosProjectTest.UnitTest.ControllerTest
 {
@@ -152,19 +151,19 @@ namespace SovosProjectTest.UnitTest.ControllerTest
         public async Task UpdateProducts_ShouldReturnOk()
         {
             var productModelFake = ProductFake.ProductModelFakeData();
-            
+
             _productServiceMock
                 .Setup(service => service.GetByIdAsync(productModelFake.Id))
                 .ReturnsAsync(productModelFake);
 
             _productServiceMock
                 .Setup(service => service.UpdateAsync(productModelFake))
-                .Returns(Task.CompletedTask);
+                .ReturnsAsync(productModelFake);
 
             var result = await _controller.Update(productModelFake);
 
-            var okResult = Assert.IsType<OkResult>(result);
-            Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
+            var okResult = Assert.IsType<ActionResult<ProductModel>>(result);
+            Assert.IsType<OkObjectResult>(okResult.Result);
         }
 
         [Fact]
@@ -178,12 +177,12 @@ namespace SovosProjectTest.UnitTest.ControllerTest
 
             _productServiceMock
                 .Setup(service => service.UpdateAsync(productModelFake))
-                .Returns(Task.CompletedTask);
+                .ReturnsAsync(productModelFake);
 
             var result = await _controller.Update(productModelFake);
 
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal((int)HttpStatusCode.NotFound, notFoundResult.StatusCode);
+            var actionResult = Assert.IsType<ActionResult<ProductModel>>(result);
+            Assert.IsType<NotFoundObjectResult>(actionResult.Result);
         }
 
         [Fact]

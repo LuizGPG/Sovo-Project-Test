@@ -15,16 +15,25 @@ namespace SovosProjectTest.Infrastructure.Repository
             _dbContext = dbContext;
         }
 
-        public async Task CreateAsync(Product productModel)
+        public async Task CreateAsync(Product product)
         {
-            _dbContext.Products.Add(productModel);
+            _dbContext.Products.Add(product);
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Product productModel)
+        public async Task<Product> UpdateAsync(Product product)
         {
-            _dbContext.Update(productModel);
-            await _dbContext.SaveChangesAsync();
+            try
+            {
+                _dbContext.Products.Update(product);
+                await _dbContext.SaveChangesAsync();
+
+                return product;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new DbUpdateConcurrencyException("Product was updated by another process.");
+            }
         }
 
         public async Task DeleteAsync(Guid id)

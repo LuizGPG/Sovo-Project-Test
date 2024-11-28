@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using SovosProjectTest.Application.Filters;
 using SovosProjectTest.Application.Model;
 using SovosProjectTest.Application.Services.Interfaces;
@@ -22,13 +23,24 @@ namespace SovosProjectTest.Application.Services
         public async Task CreateAsync(ProductModel productModel)
         {
             var product = _mapper.Map<Product>(productModel);
+            product.RowVersion = Guid.NewGuid();
             await _productRepository.CreateAsync(product);
         }
 
-        public async Task UpdateAsync(ProductModel productModel)
+        public async Task<ProductModel> UpdateAsync(ProductModel productModel)
         {
+            var existingProduct = await _productRepository.GetByIdAsync(productModel.Id);
+
+            if (existingProduct.RowVersion != productModel.RowVersion)
+            {
+                throw new DbUpdateConcurrencyException("Product was updated by another process.");
+            }
+
             var product = _mapper.Map<Product>(productModel);
-            await _productRepository.UpdateAsync(product);
+            product.RowVersion = Guid.NewGuid();
+            var updatedProduct = await _productRepository.UpdateAsync(product);
+
+            return _mapper.Map<ProductModel>(updatedProduct);
         }
 
         public async Task DeleteAsync(Guid id)

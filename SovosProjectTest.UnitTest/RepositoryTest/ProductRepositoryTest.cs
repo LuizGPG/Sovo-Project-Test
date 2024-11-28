@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SovosProjectTest.Domain.Filters;
+using SovosProjectTest.Domain.Entities;
 using SovosProjectTest.Infrastructure.Data;
 using SovosProjectTest.Infrastructure.Repository;
 using SovosProjectTest.UnitTest.Fake;
@@ -10,26 +10,26 @@ namespace SovosProjectTest.UnitTest.RepositoryTest
     public class ProductRepositoryTest
     {
         private readonly ProductRepository _productRepository;
-        private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
+        private readonly ApplicationDbContext _dbContext;
 
         public ProductRepositoryTest()
         {
-            _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
+            var dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: "ProductDbTest")
                 .Options;
 
-            var dbContext = new ApplicationDbContext(_dbContextOptions);
-            _productRepository = new ProductRepository(dbContext);
-            
-            dbContext.Products.AddRange(ProductFake.ProductFakeListData());
-            dbContext.SaveChanges();
+            _dbContext = new ApplicationDbContext(dbContextOptions);
+            _productRepository = new ProductRepository(_dbContext);
+
+            _dbContext.Products.AddRange(ProductFake.ProductFakeListData());
+            _dbContext.SaveChanges();
         }
 
         [Fact]
         public async Task GetProducts_ShouldReturnFilteredAndSortedResults_Desc()
         {
             var productFilter = ProductFilterFake.ProductFilterFakeData();
-            
+
             var (products, totalCount) = await _productRepository.GetProductsAsync(productFilter);
 
             Assert.NotNull(products);
